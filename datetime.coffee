@@ -34,7 +34,7 @@ module.exports = (env) ->
 			locDatetime:
 				description: 'flocalized datetime'
 				type: t.string
-			datetime:
+			formatted:
 				description: 'formatted datetime by given datetime format'
 				type: t.string
 			unixTimestamp:
@@ -54,7 +54,7 @@ module.exports = (env) ->
 			@locTime = lastState?["locTime"]?.value or -""
 			@locDate = lastState?["locDate"]?.value or -""
 			@locDatetime = lastState?["locDatetime"]?.value or ""
-			@datetime = lastState?["datetime"]?.value or ""
+			@formatted = lastState?["formatted"]?.value or ""
 			@unixTimestamp = lastState?["unixTimestamp"]?.value or -1
 
 			@reloadDateTimes()
@@ -68,7 +68,17 @@ module.exports = (env) ->
 					@_updateValueTimeout = null
 					@_getUpdatedDayOfMonth().finally( =>
 						@_getUpdatedDayOfWeek().finally( =>
-							@_updateValueTimeout = setTimeout(updateValues, @interval)
+							@_getUpdatedLocTime().finally( =>
+								@_getUpdatedLocDate().finally( =>
+									@_getUpdatedLocDatetime().finally( =>
+										@_getUpdatedFormatted().finally( =>
+											@_getUpdatedUnixTimestamp().finally( =>
+												@_updateValueTimeout = setTimeout(updateValues, @interval)
+											)
+										)
+									)
+								)
+							)
 						)
 					)
 
@@ -95,9 +105,9 @@ module.exports = (env) ->
 			if @locDatetime? then Promise.resolve(@locDatetime)
 			else @_getUpdatedLocDatetime("locDatetime")
 
-		getDatetime: ->
-			if @datetime? then Promise.resolve(@datetime)
-			else @_getUpdatedDatetime("datetime")
+		getFormatted: ->
+			if @formatted? then Promise.resolve(@formatted)
+			else @_getUpdatedFormatted("formatted")
 
 		getUnixTimestamp: ->
 			if @unixTimestamp? then Promise.resolve(@unixTimestamp)
@@ -124,9 +134,9 @@ module.exports = (env) ->
 			@emit "locDatetime", @locDatetime
 			return Promise.resolve @locDatetime
 
-		_getUpdatedDatetime: () =>
-			@emit "datetime", @datetime
-			return Promise.resolve @datetime
+		_getUpdatedFormatted: () =>
+			@emit "formatted", @formatted
+			return Promise.resolve @formatted
 
 		_getUpdatedUnixTimestamp: () =>
 			@emit "unixTimestamp", @unixTimestamp
@@ -142,15 +152,15 @@ module.exports = (env) ->
 			@dayOfMonth = moment.date()
 			@dayOfWeek = moment.weekday()
 			if @dateformat?
-				@datetime = moment.format(@dateformat)
+				@formatted = moment.format(@dateformat)
 			else
-				@datetime = moment.format()
+				@formatted = moment.format()
 
 			locMoment = Moment(currentDate)
 			locMoment.locale(@locale)
 			@locTime = locMoment.format('HH:mm')
-			@locDate =
-			@locDatetime = locMoment.format('L')
+			@locDate = locMoment.format('L')
+			@locDatetime = @locDate + " " + @locTime
 
 
 		destroy: () ->
