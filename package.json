@@ -1,0 +1,32 @@
+{ "name": "pimatic-datetime",
+  "description": "Plugin for providing date and time variables",
+  "author": "Paul Schmidt",
+  "license": "MIT",
+  "main": "datetime",
+  "files": [
+    "datetime.coffee",
+    "README.md",
+    "datetime-config-schema.coffee",
+    "device-config-schema.coffee"
+  ],
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/saxn-paule/pimatic-datetime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/saxn-paule/pimatic-datetime/issues"
+  },
+  "configSchema": "datetime-config-schema.coffee",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "moment": "2.21.*"
+  },
+  "peerDependencies": {
+    "pimatic": "0.9.*"
+  },
+  "engines": {
+    "node": ">0.8.x",
+    "npm": ">1.1.x"
+  }
+}
