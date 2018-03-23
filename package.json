@@ -9,7 +9,7 @@
     "datetime-config-schema.coffee",
     "device-config-schema.coffee"
   ],
-  "version": "0.0.2",
+  "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/saxn-paule/pimatic-datetime.git"
@@ -20,7 +20,7 @@
   "configSchema": "datetime-config-schema.coffee",
   "dependencies": {
     "lodash": "^3.10.1",
-    "moment": "2.21.*"
+    "moment-timezone": "0.5.*"
   },
   "peerDependencies": {
     "pimatic": "0.9.*"

@@ -5,7 +5,7 @@ module.exports = (env) ->
 	_ = require 'lodash'
 	M = env.matcher
 	t = env.require('decl-api').types
-	Moment = require 'moment'
+	Moment = require 'moment-timezone'
 
 	class DateTimePlugin extends env.plugins.Plugin
 		init: (app, @framework, @config) =>
@@ -25,13 +25,19 @@ module.exports = (env) ->
 			dayOfMonth:
 				description: 'the current day of the week'
 				type: t.number
-			locTime:
+			dayOfYear:
+				description: 'the current day of the year'
+				type: t.number
+			week:
+				description: 'the weeknumber of the year'
+				type: t.number
+			time:
 				description: 'localized time'
 				type: t.string
-			locDate:
+			date:
 				description: 'localized date'
 				type: t.string
-			locDatetime:
+			datetime:
 				description: 'flocalized datetime'
 				type: t.string
 			formatted:
@@ -48,12 +54,15 @@ module.exports = (env) ->
 			@interval = @config.interval || 5000
 			@locale = @config.locale || 'de'
 			@dateformat = @config.dateformat
+			@timezone = @config.timezone
 
 			@dayOfWeek = lastState?["dayOfWeek"]?.value or -1
 			@dayOfMonth = lastState?["dayOfMonth"]?.value or -1
-			@locTime = lastState?["locTime"]?.value or -""
-			@locDate = lastState?["locDate"]?.value or -""
-			@locDatetime = lastState?["locDatetime"]?.value or ""
+			@dayOfYear = lastState?["dayOfYear"]?.value or -1
+			@week  = lastState?["week"]?.value or -1
+			@time = lastState?["time"]?.value or -""
+			@date = lastState?["date"]?.value or -""
+			@datetime = lastState?["datetime"]?.value or ""
 			@formatted = lastState?["formatted"]?.value or ""
 			@unixTimestamp = lastState?["unixTimestamp"]?.value or -1
 
@@ -68,12 +77,16 @@ module.exports = (env) ->
 					@_updateValueTimeout = null
 					@_getUpdatedDayOfMonth().finally( =>
 						@_getUpdatedDayOfWeek().finally( =>
-							@_getUpdatedLocTime().finally( =>
-								@_getUpdatedLocDate().finally( =>
-									@_getUpdatedLocDatetime().finally( =>
-										@_getUpdatedFormatted().finally( =>
-											@_getUpdatedUnixTimestamp().finally( =>
-												@_updateValueTimeout = setTimeout(updateValues, @interval)
+							@_getUpdatedDayOfYear().finally( =>
+								@_getUpdatedTime().finally( =>
+									@_getUpdatedWeek().finally( =>
+										@_getUpdatedDate().finally( =>
+											@_getUpdatedDatetime().finally( =>
+												@_getUpdatedFormatted().finally( =>
+													@_getUpdatedUnixTimestamp().finally( =>
+														@_updateValueTimeout = setTimeout(updateValues, @interval)
+													)
+												)
 											)
 										)
 									)
@@ -93,17 +106,25 @@ module.exports = (env) ->
 			if @dayOfWeek? then Promise.resolve(@dayOfWeek)
 			else @_getUpdatedDayOfWeek("dayOfWeek")
 
-		getLocTime: ->
-			if @locTime? then Promise.resolve(@locTime)
-			else @_getUpdatedLocTime("locTime")
+		getDayOfYear: ->
+			if @dayOfYear? then Promise.resolve(@dayOfYear)
+			else @_getUpdatedDayOfYear("dayOfYear")
 
-		getLocDate: ->
-			if @locDate? then Promise.resolve(@locDate)
-			else @_getUpdatedLocDate("locDate")
+		getTime: ->
+			if @time? then Promise.resolve(@time)
+			else @_getUpdatedTime("time")
 
-		getLocDatetime: ->
-			if @locDatetime? then Promise.resolve(@locDatetime)
-			else @_getUpdatedLocDatetime("locDatetime")
+		getWeek: ->
+			if @week? then Promise.resolve(@week)
+			else @_getUpdatedWeek("week")
+
+		getDate: ->
+			if @date? then Promise.resolve(@date)
+			else @_getUpdatedDate("date")
+
+		getDatetime: ->
+			if @datetime? then Promise.resolve(@datetime)
+			else @_getUpdatedDatetime("datetime")
 
 		getFormatted: ->
 			if @formatted? then Promise.resolve(@formatted)
@@ -122,17 +143,25 @@ module.exports = (env) ->
 			@emit "dayOfWeek", @dayOfWeek
 			return Promise.resolve @dayOfWeek
 
-		_getUpdatedLocTime: () =>
-			@emit "locTime", @locTime
-			return Promise.resolve @locTime
+		_getUpdatedDayOfYear: () =>
+			@emit "dayOfYear", @dayOfYear
+			return Promise.resolve @dayOfYear
 
-		_getUpdatedLocDate: () =>
-			@emit "locDate", @locDate
-			return Promise.resolve @locDate
+		_getUpdatedTime: () =>
+			@emit "time", @time
+			return Promise.resolve @time
 
-		_getUpdatedLocDatetime: () =>
-			@emit "locDatetime", @locDatetime
-			return Promise.resolve @locDatetime
+		_getUpdatedWeek: () =>
+			@emit "week", @week
+			return Promise.resolve @week
+
+		_getUpdatedDate: () =>
+			@emit "date", @date
+			return Promise.resolve @date
+
+		_getUpdatedDatetime: () =>
+			@emit "datetime", @datetime
+			return Promise.resolve @datetime
 
 		_getUpdatedFormatted: () =>
 			@emit "formatted", @formatted
@@ -149,19 +178,24 @@ module.exports = (env) ->
 
 			moment = Moment(currentDate)
 
+			if @timezone?
+				moment.tz(@timezone)
+
+			if @locale
+				moment.locale(@locale)
+
+			@dayOfWeek = moment.weekday() + 1
 			@dayOfMonth = moment.date()
-			@dayOfWeek = moment.weekday()
+			@dayOfYear = moment.dayOfYear()
+			@week = moment.week()
+			@time = moment.format('HH:mm')
+			@date = moment.format('L')
+			@datetime = @date + " " + @time
+
 			if @dateformat?
 				@formatted = moment.format(@dateformat)
 			else
 				@formatted = moment.format()
-
-			locMoment = Moment(currentDate)
-			locMoment.locale(@locale)
-			@locTime = locMoment.format('HH:mm')
-			@locDate = locMoment.format('L')
-			@locDatetime = @locDate + " " + @locTime
-
 
 		destroy: () ->
 			if @timerId?

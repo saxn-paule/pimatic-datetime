@@ -11,8 +11,10 @@
 
 ### Sample Device Config:
 There are two optional configuration parameters
+* interval - the update interval of the device in ms. Default: 5000
 * locale - is used for formatting the local variables
 * dateformat - is used for formatting the datetime variable
+* timezone - is used for calculatine date and time from different timezones
 
 ```javascript
     {
