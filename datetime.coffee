@@ -31,6 +31,9 @@ module.exports = (env) ->
 			week:
 				description: 'the weeknumber of the year'
 				type: t.number
+			weekend:
+				description: 'time to party?'
+				type: t.string
 			time:
 				description: 'localized time'
 				type: t.string
@@ -65,6 +68,7 @@ module.exports = (env) ->
 			@datetime = lastState?["datetime"]?.value or ""
 			@formatted = lastState?["formatted"]?.value or ""
 			@unixTimestamp = lastState?["unixTimestamp"]?.value or -1
+			@weekend = lastState?["weekend"]?.value or ""
 
 			@reloadDateTimes()
 
@@ -84,7 +88,10 @@ module.exports = (env) ->
 											@_getUpdatedDatetime().finally( =>
 												@_getUpdatedFormatted().finally( =>
 													@_getUpdatedUnixTimestamp().finally( =>
-														@_updateValueTimeout = setTimeout(updateValues, @interval)
+														@_getUpdatedWeekend().finally( =>
+															@_updateValueTimeout = setTimeout(updateValues, @interval)
+
+														)
 													)
 												)
 											)
@@ -134,6 +141,10 @@ module.exports = (env) ->
 			if @unixTimestamp? then Promise.resolve(@unixTimestamp)
 			else @_getUpdatedUnixTimestamp("unixTimestamp")
 
+		getWeekend: ->
+			if @weekend? then Promise.resolve(@weekend)
+			else @_getUpdatedWeekend("weekend")
+
 
 		_getUpdatedDayOfMonth: () =>
 			@emit "dayOfMonth", @dayOfMonth
@@ -171,6 +182,10 @@ module.exports = (env) ->
 			@emit "unixTimestamp", @unixTimestamp
 			return Promise.resolve @unixTimestamp
 
+		_getUpdatedWeekend: () =>
+			@emit "weekend", @weekend
+			return Promise.resolve @weekend
+
 
 		reloadDateTimes: ->
 			currentDate = new Date()
@@ -196,6 +211,11 @@ module.exports = (env) ->
 				@formatted = moment.format(@dateformat)
 			else
 				@formatted = moment.format()
+
+			if moment.isoWeekday() > 5
+				@weekend = 'true'
+			else
+				@weekend = 'false'
 
 		destroy: () ->
 			if @timerId?
