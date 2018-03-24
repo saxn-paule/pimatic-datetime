@@ -13,13 +13,13 @@ module.exports = {
 			locale:
 				description: "the iso code"
 				type: "string"
-				default: "DE"
+				default: "de"
 			timezone:
 				description: "the timezone"
 				type: "string"
 				default: ""
 			dateformat:
-				description: "date / datetime format e.g. YYYY-MM-dd HH:mm:SS"
+				description: "date / datetime format e.g. YYYY-MM-dd HH:mm:ss"
 				type: "string"
 				default: ""
 	}
