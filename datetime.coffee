@@ -52,6 +52,25 @@ module.exports = (env) ->
 
 
 		constructor: (@config, @plugin, lastState) ->
+			numericAttributes = ['dayOfWeek', 'dayOfMonth', 'dayOfYear', 'week', 'unixTimestamp']
+			xAttributeOptions = @config.xAttributeOptions
+
+			keys = []
+			for i in xAttributeOptions
+				keys.push(i.name)
+
+			# set displaySparkline to false initially
+			for attr in numericAttributes
+				if attr not in keys
+					xAttributeOptions.push(
+						{
+							name: attr,
+							displaySparkline: false
+						}
+					)
+
+			@config.xAttributeOptions = xAttributeOptions
+
 			@id = @config.id
 			@name = @config.name
 			@interval = @config.interval || 5000

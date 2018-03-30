@@ -9,7 +9,7 @@
     "datetime-config-schema.coffee",
     "device-config-schema.coffee"
   ],
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/saxn-paule/pimatic-datetime.git"
