@@ -22,5 +22,22 @@ module.exports = {
 				description: "date / datetime format e.g. YYYY-MM-dd HH:mm:ss"
 				type: "string"
 				default: ""
+			attributes:
+				description: "Attributes which shall be exposed by the device"
+				type: "array"
+				default: []
+				format: "table"
+				items:
+					type: "object"
+					properties:
+						name:
+							enum: [
+								"dayOfWeek", "dayOfMonth", "dayOfYear", "week", "weekend", "time", "date", "datetime", "formatted", "unixTimestamp"
+							]
+							description: "datetime related attributes"
+						label:
+							type: "string"
+							description: "The attribute label text to be displayed. The name will be displayed if not set"
+							required: false
 	}
 }

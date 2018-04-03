@@ -71,6 +71,16 @@ module.exports = (env) ->
 
 			@config.xAttributeOptions = xAttributeOptions
 
+			# provide possibility to add labels
+			for attribute in @config.attributes
+				do (attribute) =>
+					label = attribute.name.replace /(^[a-z])|([A-Z])/g, ((match, p1, p2, offset) =>
+						(if offset > 0 then " " else "") + match.toUpperCase())
+					@attributes[attribute.name] =
+						description: label
+						type: "string"
+						acronym: attribute.label ? label
+
 			@id = @config.id
 			@name = @config.name
 			@interval = @config.interval || 5000
@@ -121,7 +131,7 @@ module.exports = (env) ->
 						)
 					)
 
-			super()
+			super(@config)
 			updateValues()
 
 		getDayOfMonth: ->
