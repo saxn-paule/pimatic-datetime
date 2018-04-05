@@ -1,9 +1,6 @@
 module.exports = (env) ->
 
 	Promise = env.require 'bluebird'
-	assert = env.require 'cassert'
-	_ = require 'lodash'
-	M = env.matcher
 	t = env.require('decl-api').types
 	Moment = require 'moment-timezone'
 
@@ -12,7 +9,8 @@ module.exports = (env) ->
 
 			deviceConfigDef = require("./device-config-schema")
 
-			@framework.deviceManager.registerDeviceClass("DateTimeDevice",{
+			@framework.deviceManager.registerDeviceClass("DateTimeDevice", {
+				prepareConfig: DateTimeDevice.prepareConfig,
 				configDef : deviceConfigDef.DateTimeDevice,
 				createCallback : (config, lastState) => new DateTimeDevice(config, lastState, this )
 			})
@@ -41,7 +39,7 @@ module.exports = (env) ->
 				description: 'localized date'
 				type: t.string
 			datetime:
-				description: 'flocalized datetime'
+				description: 'localized datetime'
 				type: t.string
 			formatted:
 				description: 'formatted datetime by given datetime format'
@@ -51,9 +49,9 @@ module.exports = (env) ->
 				type: t.number
 
 
-		constructor: (@config, @plugin, lastState) ->
+		@prepareConfig: (config) =>
 			numericAttributes = ['dayOfWeek', 'dayOfMonth', 'dayOfYear', 'week', 'unixTimestamp']
-			xAttributeOptions = @config.xAttributeOptions
+			xAttributeOptions = config.xAttributeOptions
 
 			keys = []
 			for i in xAttributeOptions
@@ -69,8 +67,10 @@ module.exports = (env) ->
 						}
 					)
 
-			@config.xAttributeOptions = xAttributeOptions
+			config.xAttributeOptions = xAttributeOptions
 
+
+		constructor: (@config, @plugin, lastState) ->
 			# provide possibility to add labels
 			for attribute in @config.attributes
 				do (attribute) =>
@@ -80,6 +80,12 @@ module.exports = (env) ->
 						description: label
 						type: "string"
 						acronym: attribute.label ? label
+
+			# create getter function for attributes
+			for attributeName of @attributes
+				@_createGetter(attributeName, =>
+					@initialized.then => Promise.resolve @[attributeName]
+				)
 
 			@id = @config.id
 			@name = @config.name
@@ -91,7 +97,7 @@ module.exports = (env) ->
 			@dayOfWeek = lastState?["dayOfWeek"]?.value or -1
 			@dayOfMonth = lastState?["dayOfMonth"]?.value or -1
 			@dayOfYear = lastState?["dayOfYear"]?.value or -1
-			@week  = lastState?["week"]?.value or -1
+			@week = lastState?["week"]?.value or -1
 			@time = lastState?["time"]?.value or -""
 			@date = lastState?["date"]?.value or -""
 			@datetime = lastState?["datetime"]?.value or ""
@@ -99,126 +105,24 @@ module.exports = (env) ->
 			@unixTimestamp = lastState?["unixTimestamp"]?.value or -1
 			@weekend = lastState?["weekend"]?.value or ""
 
-			@reloadDateTimes()
+			@initialized = new Promise (resolve) =>
+				@_reloadDateTimes()
+				resolve()
 
 			@timerId = setInterval ( =>
-				@reloadDateTimes()
-			), (@interval)
-
-			updateValues = =>
-				if @interval > 0
-					@_updateValueTimeout = null
-					@_getUpdatedDayOfMonth().finally( =>
-						@_getUpdatedDayOfWeek().finally( =>
-							@_getUpdatedDayOfYear().finally( =>
-								@_getUpdatedTime().finally( =>
-									@_getUpdatedWeek().finally( =>
-										@_getUpdatedDate().finally( =>
-											@_getUpdatedDatetime().finally( =>
-												@_getUpdatedFormatted().finally( =>
-													@_getUpdatedUnixTimestamp().finally( =>
-														@_getUpdatedWeekend().finally( =>
-															@_updateValueTimeout = setTimeout(updateValues, @interval)
-
-														)
-													)
-												)
-											)
-										)
-									)
-								)
-							)
-						)
-					)
-
+				@_reloadDateTimes()
+			), @interval
 			super(@config)
-			updateValues()
-
-		getDayOfMonth: ->
-			if @dayOfMonth? then Promise.resolve(@dayOfMonth)
-			else @_getUpdatedDayOfMonth("dayOfMonth")
-
-		getDayOfWeek: ->
-			if @dayOfWeek? then Promise.resolve(@dayOfWeek)
-			else @_getUpdatedDayOfWeek("dayOfWeek")
-
-		getDayOfYear: ->
-			if @dayOfYear? then Promise.resolve(@dayOfYear)
-			else @_getUpdatedDayOfYear("dayOfYear")
-
-		getTime: ->
-			if @time? then Promise.resolve(@time)
-			else @_getUpdatedTime("time")
-
-		getWeek: ->
-			if @week? then Promise.resolve(@week)
-			else @_getUpdatedWeek("week")
-
-		getDate: ->
-			if @date? then Promise.resolve(@date)
-			else @_getUpdatedDate("date")
-
-		getDatetime: ->
-			if @datetime? then Promise.resolve(@datetime)
-			else @_getUpdatedDatetime("datetime")
-
-		getFormatted: ->
-			if @formatted? then Promise.resolve(@formatted)
-			else @_getUpdatedFormatted("formatted")
-
-		getUnixTimestamp: ->
-			if @unixTimestamp? then Promise.resolve(@unixTimestamp)
-			else @_getUpdatedUnixTimestamp("unixTimestamp")
-
-		getWeekend: ->
-			if @weekend? then Promise.resolve(@weekend)
-			else @_getUpdatedWeekend("weekend")
 
 
-		_getUpdatedDayOfMonth: () =>
-			@emit "dayOfMonth", @dayOfMonth
-			return Promise.resolve @dayOfMonth
-
-		_getUpdatedDayOfWeek: () =>
-			@emit "dayOfWeek", @dayOfWeek
-			return Promise.resolve @dayOfWeek
-
-		_getUpdatedDayOfYear: () =>
-			@emit "dayOfYear", @dayOfYear
-			return Promise.resolve @dayOfYear
-
-		_getUpdatedTime: () =>
-			@emit "time", @time
-			return Promise.resolve @time
-
-		_getUpdatedWeek: () =>
-			@emit "week", @week
-			return Promise.resolve @week
-
-		_getUpdatedDate: () =>
-			@emit "date", @date
-			return Promise.resolve @date
-
-		_getUpdatedDatetime: () =>
-			@emit "datetime", @datetime
-			return Promise.resolve @datetime
-
-		_getUpdatedFormatted: () =>
-			@emit "formatted", @formatted
-			return Promise.resolve @formatted
-
-		_getUpdatedUnixTimestamp: () =>
-			@emit "unixTimestamp", @unixTimestamp
-			return Promise.resolve @unixTimestamp
-
-		_getUpdatedWeekend: () =>
-			@emit "weekend", @weekend
-			return Promise.resolve @weekend
+		_setAttribute: (attributeName, value) ->
+			@emit attributeName, value
+			@[attributeName] = value
 
 
-		reloadDateTimes: ->
+		_reloadDateTimes: ->
 			currentDate = new Date()
-			@unixTimestamp = currentDate.getTime()
+			@_setAttribute "unixTimestamp", currentDate.getTime()
 
 			moment = Moment(currentDate)
 
@@ -228,30 +132,29 @@ module.exports = (env) ->
 			if @locale
 				moment.locale(@locale)
 
-			@dayOfWeek = moment.weekday() + 1
-			@dayOfMonth = moment.date()
-			@dayOfYear = moment.dayOfYear()
-			@week = moment.week()
-			@time = moment.format('HH:mm')
-			@date = moment.format('L')
-			@datetime = @date + " " + @time
+			@_setAttribute "dayOfWeek", moment.weekday() + 1
+			@_setAttribute "dayOfMonth", moment.date()
+			@_setAttribute "dayOfYear", moment.dayOfYear()
+			@_setAttribute "week", moment.week()
+			@_setAttribute "time", moment.format('HH:mm')
+			@_setAttribute "date", moment.format('L')
+			@_setAttribute "datetime", @date + " " + @time
 
 			if @dateformat?
-				@formatted = moment.format(@dateformat)
+				@_setAttribute "formatted", moment.format(@dateformat)
 			else
-				@formatted = moment.format()
+				@_setAttribute "formatted", moment.format()
 
 			if moment.isoWeekday() > 5
-				@weekend = 'true'
+				@_setAttribute "weekend", 'true'
 			else
-				@weekend = 'false'
+				@_setAttribute "weekend", 'false'
+
 
 		destroy: () ->
 			if @timerId?
 				clearInterval @timerId
 				@timerId = null
-
-			clearTimeout @_updateValueTimeout if @_updateValueTimeout?
 			super()
 
 	return new DateTimePlugin
