@@ -47,6 +47,9 @@ module.exports = (env) ->
 			unixTimestamp:
 				description: 'unix timestamp'
 				type: t.number
+			difference:
+				description: 'difference between reference and current date(time)'
+				type: t.number
 
 
 		@prepareConfig: (config) =>
@@ -93,6 +96,8 @@ module.exports = (env) ->
 			@locale = @config.locale || 'de'
 			@dateformat = @config.dateformat
 			@timezone = @config.timezone
+			@referenceDate = @config.referenceDate
+			@differenceFormat = @config.differenceFormat || "days"
 
 			@dayOfWeek = lastState?["dayOfWeek"]?.value or -1
 			@dayOfMonth = lastState?["dayOfMonth"]?.value or -1
@@ -150,6 +155,31 @@ module.exports = (env) ->
 			else
 				@_setAttribute "weekend", 'false'
 
+			### Calculate differences ###
+			if @referenceDate
+				refDate = Moment(@referenceDate)
+
+				if @timezone?
+					refDate.tz(@timezone)
+
+				if @locale
+					refDate.locale(@locale)
+
+				diff = refDate.diff(currentDate)
+
+				switch @differenceFormat
+					when "days"
+						diff = diff / 86400000
+					when "hours"
+						diff = diff / 3600000
+					when "minutes"
+						diff = diff / 60000
+					when "seconds"
+						diff = diff / 1000
+					else
+						diff = diff
+
+				@_setAttribute "difference", Math.round(diff)
 
 		destroy: () ->
 			if @timerId?

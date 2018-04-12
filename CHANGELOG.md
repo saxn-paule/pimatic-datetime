@@ -1,3 +1,6 @@
+**version 0.3.0** *released 2018-04-12*
+* provided possibility to calculate the difference between two dates/times
+
 **version 0.2.0** *released 2018-04-03*
 * provided possibility to add labels for attributes
 

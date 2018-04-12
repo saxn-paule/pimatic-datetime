@@ -22,6 +22,14 @@ module.exports = {
 				description: "date / datetime format e.g. YYYY-MM-dd HH:mm:ss"
 				type: "string"
 				default: ""
+			referenceDate:
+				description: "a fix reference date for date calculations. Format: YYYY-MM-dd HH:mm:ss"
+				type: "string"
+				default: ""
+			differenceFormat:
+				description: "the format for date calculation differences [days|hours|minutes|seconds]"
+				type: "string"
+				default: "days"
 			attributes:
 				description: "Attributes which shall be exposed by the device"
 				type: "array"

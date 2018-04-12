@@ -15,6 +15,8 @@ There are four optional configuration parameters
 * locale - is used for formatting the local variables
 * dateformat - is used for formatting the "formatted" variable
 * timezone - is used for calculating date and time from different timezones
+* referenceDate - a fix reference date for date calculations. Format: YYYY-MM-dd HH:mm:ss
+* differenceFormat - the format for date calculation differences [days|hours|minutes|seconds]
 
 ```javascript
     {
