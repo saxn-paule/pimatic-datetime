@@ -40,7 +40,7 @@ module.exports = {
 					properties:
 						name:
 							enum: [
-								"dayOfWeek", "dayOfMonth", "dayOfYear", "week", "weekend", "time", "date", "datetime", "formatted", "unixTimestamp"
+								"dayOfWeek", "dayOfMonth", "dayOfYear", "week", "weekend", "time", "date", "datetime", "formatted", "unixTimestamp", "difference"
 							]
 							description: "datetime related attributes"
 						label:
