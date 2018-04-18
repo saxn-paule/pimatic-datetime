@@ -121,8 +121,9 @@ module.exports = (env) ->
 
 
 		_setAttribute: (attributeName, value) ->
-			@emit attributeName, value
-			@[attributeName] = value
+			do (attributeName) =>
+				@emit attributeName, value
+				@[attributeName] = value
 
 
 		_reloadDateTimes: ->
