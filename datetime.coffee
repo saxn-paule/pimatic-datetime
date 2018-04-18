@@ -86,9 +86,10 @@ module.exports = (env) ->
 
 			# create getter function for attributes
 			for attributeName of @attributes
-				@_createGetter(attributeName, =>
-					@initialized.then => Promise.resolve @[attributeName]
-				)
+				do (attributeName) =>
+					@_createGetter(attributeName, =>
+						@initialized.then => Promise.resolve @[attributeName]
+					)
 
 			@id = @config.id
 			@name = @config.name
@@ -121,9 +122,8 @@ module.exports = (env) ->
 
 
 		_setAttribute: (attributeName, value) ->
-			do (attributeName) =>
-				@emit attributeName, value
-				@[attributeName] = value
+			@emit attributeName, value
+			@[attributeName] = value
 
 
 		_reloadDateTimes: ->
