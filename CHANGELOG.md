@@ -1,3 +1,6 @@
+**version 0.3.1** *released 2018-04-18*
+* fixed getter functions to hold correct references
+
 **version 0.3.0** *released 2018-04-12*
 * provided possibility to calculate the difference between two dates/times
 

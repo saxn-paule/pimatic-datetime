@@ -53,7 +53,7 @@ module.exports = (env) ->
 
 
 		@prepareConfig: (config) =>
-			numericAttributes = ['dayOfWeek', 'dayOfMonth', 'dayOfYear', 'week', 'unixTimestamp']
+			numericAttributes = ['dayOfWeek', 'dayOfMonth', 'dayOfYear', 'week', 'unixTimestamp', 'difference']
 			xAttributeOptions = config.xAttributeOptions
 
 			keys = []
