@@ -73,7 +73,10 @@ module.exports = (env) ->
 			config.xAttributeOptions = xAttributeOptions
 
 
-		constructor: (@config, @plugin, lastState) ->
+		constructor: (config, plugin, lastState) ->
+			super(config.id, config.name)
+			@config = config
+
 			# provide possibility to add labels
 			for attribute in @config.attributes
 				do (attribute) =>
@@ -91,8 +94,6 @@ module.exports = (env) ->
 						@initialized.then => Promise.resolve @[attributeName]
 					)
 
-			@id = @config.id
-			@name = @config.name
 			@interval = @config.interval || 5000
 			@locale = @config.locale || 'de'
 			@dateformat = @config.dateformat
@@ -118,8 +119,6 @@ module.exports = (env) ->
 			@timerId = setInterval ( =>
 				@_reloadDateTimes()
 			), @interval
-			super(@config)
-
 
 		_setAttribute: (attributeName, value) ->
 			@emit attributeName, value
